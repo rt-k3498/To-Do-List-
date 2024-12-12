@@ -4,9 +4,6 @@ import { ScrollView, TextInput } from "react-native-gesture-handler";
 import { db } from "../../firebaseConfig";
 import { useState,useEffect } from "react";
 
-
-
-
 export default function List() {
     const [tasks, setTasks] = useState<any[]>([])
     const [task, setTask] = useState('')
@@ -95,13 +92,11 @@ const styles = StyleSheet.create({
       flex: 1,
       width: '100%',
       flexDirection: 'column',
-      padding: 0,
     },
     taskHolder:{
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: 10,
       margin: 10,
     },
     tasks: {
@@ -118,6 +113,7 @@ const styles = StyleSheet.create({
       alignItems: 'center',
       justifyContent: 'center',
       padding: 2,
+      borderRadius: 15,
 
     },
 });
