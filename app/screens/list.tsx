@@ -4,16 +4,23 @@ import { ScrollView, TextInput } from "react-native-gesture-handler";
 import { db } from "../../firebaseConfig";
 import { useState,useEffect } from "react";
 
-export default function List() {
+export default function List({navigation}:any) {
+    const [editState, setEditState] = useState(false)
     const [tasks, setTasks] = useState<any[]>([])
     const [task, setTask] = useState('')
+    navigation.setOptions({
+        headerRight: () => (
+            <TouchableOpacity style={styles.editButton} onPress={()=>(handleEdit())}>
+              <Text>Edit</Text>
+            </TouchableOpacity>
+          )
+    })
 
     useEffect(() => {
         async function fetchData() {
             const data = await getDocs(collection(db, 'tasks'))
             data.docs.map( (doc) => {
               setTasks((prev) => [...prev,doc.data()])
-              console.log(doc.data())
             })
         }
         fetchData()
@@ -21,6 +28,10 @@ export default function List() {
 
     function handleChange (text:any) {
         setTask(text)
+    }
+
+    function handleEdit(){
+      setEditState(!editState)
     }
 
     function addTask () {
@@ -115,6 +126,10 @@ const styles = StyleSheet.create({
       padding: 2,
       borderRadius: 15,
 
+    },
+    editButton:{
+      marginRight: 20,
+  
     },
 });
 

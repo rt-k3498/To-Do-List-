@@ -1,23 +1,18 @@
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { NavigationContainer } from '@react-navigation/native';
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { useState } from 'react';
+import { StyleSheet} from 'react-native';
 import List from './app/screens/list';
 import Calender from './app/screens/calender';
+import SignUp from './app/screens/signup';
+import Login from './app/screens/login';
 
 
 export default function App() {
-  const [editState, setEditState] = useState(false)
   const drawer = createDrawerNavigator();
-
-  function handleEdit(){
-    setEditState(!editState)
-  }
 
   return (
     <NavigationContainer>
-      <drawer.Navigator initialRouteName='To Do List' screenOptions={{
+      <drawer.Navigator initialRouteName='Login' screenOptions={{
       drawerActiveTintColor: 'white',
       drawerActiveBackgroundColor: '#003CB3',
       drawerInactiveBackgroundColor: 'lightgrey',
@@ -28,13 +23,17 @@ export default function App() {
         color: 'white',
       },
         }}>
-        <drawer.Screen options={{
-          headerRight: () => (
-            <TouchableOpacity style={styles.editButton} onPress={()=>(handleEdit())}>
-              <Text>Edit</Text>
-            </TouchableOpacity>
-          )
-        }} name="To Do List" component={List} /> 
+        <drawer.Screen name="Sign Up" component={SignUp} options={{
+          drawerItemStyle: {display: 'none'},
+          headerLeft: () => null,
+          swipeEnabled: false 
+        }} />
+        <drawer.Screen name="Login" component={Login}  options={{
+          drawerItemStyle: {display: 'none'},
+          headerLeft: () => null,
+          swipeEnabled: false,
+        }} />
+        <drawer.Screen name="To Do List" component={List} /> 
         <drawer.Screen name="Calender" component={Calender} /> 
       </drawer.Navigator>
     </NavigationContainer>    
@@ -48,8 +47,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  editButton:{
-    marginRight: 20,
 
-  },
 });
