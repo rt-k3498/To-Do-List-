@@ -1,7 +1,9 @@
 import { View,TextInput, TouchableOpacity,Button,StyleSheet,Text,Alert } from "react-native";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../firebaseConfig";
+import {db} from '../../firebaseConfig'
 import { useState } from "react";
+import { addDoc,collection,serverTimestamp } from "firebase/firestore";
 
 export default function SignUp ({navigation}:any) {
     const [email, setEmail] = useState('')
@@ -19,6 +21,8 @@ export default function SignUp ({navigation}:any) {
         console.log(password)
         try {
             const userCredential = await createUserWithEmailAndPassword(auth,email,password)
+            const userId = auth.currentUser?.uid
+            await addDoc(collection(db, `${userId}`), {Note: 'Welcome to your To Do List, delete this task and get started!', done: false, time: serverTimestamp()})
             navigation.navigate('To Do List')
         }catch (error){ 
             Alert.alert('Sign Up Failed')

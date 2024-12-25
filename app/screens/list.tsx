@@ -1,13 +1,16 @@
-import { addDoc, collection,getDocs} from "firebase/firestore";
+import { addDoc, collection, getDocs, doc, deleteDoc,serverTimestamp, query, orderBy, } from "firebase/firestore";
 import { View,Text,StyleSheet,Button, Touchable, TouchableOpacity} from "react-native";
 import { ScrollView, TextInput } from "react-native-gesture-handler";
 import { db } from "../../firebaseConfig";
+import {auth} from '../../firebaseConfig'
 import { useState,useEffect } from "react";
 
 export default function List({navigation}:any) {
     const [editState, setEditState] = useState(false)
     const [tasks, setTasks] = useState<any[]>([])
     const [task, setTask] = useState('')
+    const userId = auth.currentUser?.uid
+
     navigation.setOptions({
         headerRight: () => (
             <TouchableOpacity style={styles.editButton} onPress={()=>(handleEdit())}>
@@ -17,14 +20,17 @@ export default function List({navigation}:any) {
     })
 
     useEffect(() => {
-        async function fetchData() {
-            const data = await getDocs(collection(db, 'tasks'))
-            data.docs.map( (doc) => {
-              setTasks((prev) => [...prev,doc.data()])
-            })
-        }
         fetchData()
     },[])
+
+    async function fetchData() {
+      const q = query(collection(db, `${userId}`), orderBy('time'))
+      const data = await getDocs(q)
+      setTasks([])
+      data.docs.map( (doc) => {
+        setTasks((prev) => [[doc.id,doc.data()],...prev])
+      })
+    }
 
     function handleChange (text:any) {
         setTask(text)
@@ -35,13 +41,48 @@ export default function List({navigation}:any) {
     }
 
     function addTask () {
-        addDoc(collection(db, 'tasks'), {Note: task, done: false})
-        setTasks((prev) => [{Note: task, done: false},...prev])
+        addDoc(collection(db, `${userId}`), {Note: task, done: false, time: serverTimestamp()})
+        fetchData()
         setTask('')
     }
 
+    function removeTask (id:any){
+      const doc_ref = doc(db, `${userId}`, id)
+      deleteDoc(doc_ref)
+      fetchData()
+    }
+
+    function doneTask (index:number){
+      
+    }
+
   return (
-    <View style={styles.container}>
+    editState ? 
+    
+      (<View style={styles.container}>
+        <ScrollView style={{flexGrow:1,width:'100%',}}>
+          <View style={styles.taskDisplay} >
+              {tasks.map((items:any,index:number)=>(
+                <View key={index} style={styles.taskHolder}>
+                  <TouchableOpacity style={styles.removeButton} onPress={()=>{removeTask(items[0])}}>
+                    <Text>x</Text>
+                  </TouchableOpacity>
+                  <View style={styles.tasks} >
+                    <Text style={{flexWrap: 'wrap',}}>{items[1].Note}</Text>
+                  </View>
+                  <TouchableOpacity style={styles.checkButton} onPress={()=>{}}>
+                    <Text>Done</Text>
+                  </TouchableOpacity>
+                </View>
+  
+              ))}
+          </View>
+        </ScrollView>
+      </View>)
+
+    :
+
+    (<View style={styles.container}>
       <ScrollView style={{flexGrow:1,width:'100%',}}>
         <View style={styles.inputSection}>
             <TextInput style={styles.input} value={task} placeholder='Add a task' onChangeText={(text) => handleChange(text)}/>
@@ -50,10 +91,10 @@ export default function List({navigation}:any) {
             </TouchableOpacity>
         </View>
         <View style={styles.taskDisplay} >
-            {tasks.map((items,index)=>(
+            {tasks.map((items:any,index:number)=>(
               <View key={index} style={styles.taskHolder}>
                 <View style={styles.tasks} >
-                  <Text style={{flexWrap: 'wrap',}}>{items.Note}</Text>
+                  <Text style={{flexWrap: 'wrap',}}>{items[1].Note}</Text>
                 </View>
                 <TouchableOpacity style={styles.checkButton}>
                   <Text>Done</Text>
@@ -63,7 +104,7 @@ export default function List({navigation}:any) {
             ))}
         </View>
       </ScrollView>
-    </View>
+    </View>)
   );
 }
 
@@ -131,6 +172,15 @@ const styles = StyleSheet.create({
       marginRight: 20,
   
     },
+    removeButton:{
+      flex: 0.5,
+      borderWidth: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 2,
+      borderRadius: 100,
+      backgroundColor: 'red',
+    }
 });
 
 
